@@ -2,7 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
-const { MongoClient } = require('mongodb');
+const UserRepository = require('./userRepository');
 const cors = require('cors');
 
 const app = express();
@@ -10,9 +10,6 @@ app.use(express.json());
 app.use(cors());
 
 const secretKey = crypto.randomBytes(64).toString('hex');
-
-const uri = 'mongodb://localhost:27017';
-const collectionName = 'users';
 
 // Authentication middleware
 const authenticate = (req, res, next) => {
@@ -40,10 +37,10 @@ app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const client = new MongoClient(uri, { useNewUrlParser: true });
-    await client.connect();
-    const collection = client.db('users').collection(collectionName);
-    const user = await collection.findOne({ username });
+    const repository = new UserRepository();
+    await repository.connect();
+    const user = await repository.getByUsername(username);
+    await repository.disconnect();
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
@@ -57,7 +54,6 @@ app.post('/login', async (req, res) => {
     const token = jwt.sign({ id: user._id, username: user.username }, secretKey);
 
     res.json({ token });
-    await client.close();
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ message: 'Server error' });
