@@ -1,5 +1,5 @@
 const express = require('express');
-const userRoutes = require('./userRoutes');
+const router = require('./router');
 const authService = require('./authService');
 const cors = require('cors');
 
@@ -25,7 +25,7 @@ app.use('/protected', async (req, res, next) => {
     }
 });
 
-app.use('/', userRoutes);
+app.use('/', router);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
