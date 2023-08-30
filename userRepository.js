@@ -32,6 +32,10 @@ class UserRepository {
 
 class DevUserRepository {
     async getByUsername(username) {
+        if(username !== 'admin'){
+            return undefined;
+        }
+
         const password = 'admin';
         const passwordHash = await bcrypt.hash(password, 5)
         return { username: 'admin', passwordHash: passwordHash };
